@@ -70,16 +70,18 @@
 // - Handle invalid menu choices gracefully (print an error, do not crash).
 //
 
-//
-// =============================================================================
-// YOUR CODE BELOW — remove the // symbols from the scaffold and fill it in
-// =============================================================================
-
 #include <iostream>
 #include <vector>
 #include <string>
 #include <limits>
 using namespace std;
+
+enum class ReadResult
+{
+    Ok,
+    Invalid,
+    End
+};
 
 void printMenu()
 {
@@ -92,16 +94,17 @@ void printMenu()
     cout << "4. Quit" << endl;
 }
 
-bool readInt(int &value)
+ReadResult readInt(int &value)
 {
     cin >> value;
     if (cin.fail())
     {
+        bool atEnd = cin.eof();
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return false;
+        return atEnd ? ReadResult::End : ReadResult::Invalid;
     }
-    return true;
+    return ReadResult::Ok;
 }
 
 void addTask(vector<string> &tasks)
@@ -110,13 +113,13 @@ void addTask(vector<string> &tasks)
     string task;
     cout << "Enter task: ";
     getline(cin, task);
-    todo.push_back(task);
+    tasks.push_back(task);
     cout << "Task added: \"" << task << "\"" << endl;
 }
 
-void viewTasks(vector<string> &todo)
+void viewTasks(vector<string> &tasks)
 {
-    if (todo.empty())
+    if (tasks.empty())
     {
         cout << "Your to-do list is empty." << endl;
         return;
@@ -130,34 +133,42 @@ void viewTasks(vector<string> &todo)
     }
 }
 
-void deleteTask(vector<string> &tasks)
+bool deleteTask(vector<string> &tasks)
 {
     if (tasks.empty())
     {
         cout << "Your to-do list is empty. Nothing to delete." << endl;
-        return;
+        return false;
     }
 
     viewTasks(tasks);
 
     int pick;
     cout << "Enter task number to delete: ";
-    if (!readInt(pick))
+    ReadResult result = readInt(pick);
+
+    if (result == ReadResult::End)
+    {
+        return true;
+    }
+
+    if (result == ReadResult::Invalid)
     {
         cout << "Error: invalid task number." << endl;
-        return;
+        return false;
     }
 
     int idx = pick - 1;
     if (idx < 0 || idx >= static_cast<int>(tasks.size()))
     {
         cout << "Error: invalid task number." << endl;
-        return;
+        return false;
     }
 
     string gone = tasks[idx];
     tasks.erase(tasks.begin() + idx);
     cout << "Task \"" << gone << "\" has been removed." << endl;
+    return false;
 }
 
 int main()
@@ -169,7 +180,15 @@ int main()
     {
         printMenu();
         cout << "Enter your choice (1-4): ";
-        if (!readInt(option))
+        ReadResult result = readInt(option);
+
+        if (result == ReadResult::End)
+        {
+            cout << "Goodbye!" << endl;
+            break;
+        }
+
+        if (result == ReadResult::Invalid)
         {
             cout << "Error: invalid choice." << endl;
             continue;
@@ -185,7 +204,11 @@ int main()
         }
         else if (option == 3)
         {
-            deleteTask(tasks);
+            if (deleteTask(tasks))
+            {
+                cout << "Goodbye!" << endl;
+                break;
+            }
         }
         else if (option == 4)
         {
