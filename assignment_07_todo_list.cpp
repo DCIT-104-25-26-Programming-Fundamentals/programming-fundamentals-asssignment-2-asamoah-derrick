@@ -78,5 +78,125 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <limits>
 using namespace std;
 
+void printMenu()
+{
+    cout << "============================" << endl;
+    cout << "     TO-DO LIST MENU" << endl;
+    cout << "============================" << endl;
+    cout << "1. Add task" << endl;
+    cout << "2. View tasks" << endl;
+    cout << "3. Delete task" << endl;
+    cout << "4. Quit" << endl;
+}
+
+bool readInt(int &value)
+{
+    cin >> value;
+    if (cin.fail())
+    {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return false;
+    }
+    return true;
+}
+
+void addTask(vector<string> &tasks)
+{
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    string task;
+    cout << "Enter task: ";
+    getline(cin, task);
+    todo.push_back(task);
+    cout << "Task added: \"" << task << "\"" << endl;
+}
+
+void viewTasks(vector<string> &todo)
+{
+    if (todo.empty())
+    {
+        cout << "Your to-do list is empty." << endl;
+        return;
+    }
+
+    cout << "Your Tasks:" << endl;
+    int index = 1;
+    for (const string &task : tasks)
+    {
+        cout << index++ << ". " << task << endl;
+    }
+}
+
+void deleteTask(vector<string> &tasks)
+{
+    if (tasks.empty())
+    {
+        cout << "Your to-do list is empty. Nothing to delete." << endl;
+        return;
+    }
+
+    viewTasks(tasks);
+
+    int pick;
+    cout << "Enter task number to delete: ";
+    if (!readInt(pick))
+    {
+        cout << "Error: invalid task number." << endl;
+        return;
+    }
+
+    int idx = pick - 1;
+    if (idx < 0 || idx >= static_cast<int>(tasks.size()))
+    {
+        cout << "Error: invalid task number." << endl;
+        return;
+    }
+
+    string gone = tasks[idx];
+    tasks.erase(tasks.begin() + idx);
+    cout << "Task \"" << gone << "\" has been removed." << endl;
+}
+
+int main()
+{
+    vector<string> tasks;
+    int option;
+
+    while (true)
+    {
+        printMenu();
+        cout << "Enter your choice (1-4): ";
+        if (!readInt(option))
+        {
+            cout << "Error: invalid choice." << endl;
+            continue;
+        }
+
+        if (option == 1)
+        {
+            addTask(tasks);
+        }
+        else if (option == 2)
+        {
+            viewTasks(tasks);
+        }
+        else if (option == 3)
+        {
+            deleteTask(tasks);
+        }
+        else if (option == 4)
+        {
+            cout << "Goodbye!" << endl;
+            break;
+        }
+        else
+        {
+            cout << "Error: invalid choice." << endl;
+        }
+    }
+
+    return 0;
+}
